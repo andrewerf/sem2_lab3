@@ -35,18 +35,14 @@ using namespace std;
 
 int main()
 {
-	AVL_Tree<int, string> Tree = {
-		std::make_pair(0, "lalal"),
-		std::make_pair(1, "djksfjl")
-	};
-	Tree[3] = "lol2";
-	Tree.erase(0);
+	AVL_Tree<int, string> Tree;
 
-//	for(int i = 0; i < 1024; ++i)
-//		Tree.insert(i, std::to_string(2*i));
+	for(int i = 0; i < 15; ++i)
+		Tree[i] = std::to_string(i);
 
-	cout << Tree.get(3);
-//	bfs_show(root);
+	Tree.traversal(Tree.RRtL, [](const int &a, string &b){
+		std::cout << b << ' ';
+	});
 
 	return 0;
 }

@@ -7,6 +7,8 @@
 
 template <typename T, typename V>
 class AVL_Tree {
+	using traversal_type = void (*)(void*&, void*&, void*&);
+	using traversal_func = void (*)(const T &key, V &val);
 public:
 	AVL_Tree() :
 		_root(nullptr),
@@ -39,6 +41,7 @@ public:
 	const V& operator[] (TT&& key) const {return get(std::forward<TT>(key));}
 
 
+	void traversal(traversal_type t, traversal_func func) {_traversal(_root, nullptr, t, func);}
 	size_t size() const {return _size;}
 	int height() const {return _root->height;}
 
@@ -90,6 +93,16 @@ private:
 	template<typename TT>
 	Node *_get(Node *p, TT&& k) const;
 
+	void _traversal(Node *p, Node *parent, traversal_type t, traversal_func func);
+
+public:
+	static void RtLR(void *&n1, void *&n2, void *&n3){std::swap(n1, n2);}
+	static void RtRL(void *&n1, void *&n2, void *&n3){std::swap(n2, n3); std::swap(n1, n3);}
+	static void LRRt(void *&n1, void *&n2, void *&n3){std::swap(n2, n3);}
+	static void LRtR(void *&n1, void *&n2, void *&n3){}
+	static void RLRt(void *&n1, void *&n2, void *&n3){std::swap(n1, n3); std::swap(n2, n3);}
+	static void RRtL(void *&n1, void *&n2, void *&n3){std::swap(n1, n3);}
+
 private:
 	template<typename FV, typename ...Args>
 	void _list_initializer(FV&& p, Args&& ...args);
@@ -133,6 +146,25 @@ V& AVL_Tree<T,V>::operator[](TT&& key)
 	}
 
 	return get(std::forward<TT>(key));
+}
+
+template <typename T, typename V>
+void AVL_Tree<T,V>::_traversal(Node *p, Node *parent, traversal_type t, traversal_func func)
+{
+	if(p == nullptr)
+		return;
+
+	if(p == parent) {
+		func(p->key, p->val);
+	}
+	else {
+		void *n1 = p->left, *n2 = p, *n3 = p->right;
+		t(n1, n2, n3);
+
+		_traversal((Node*)n1, p, t, func);
+		_traversal((Node*)n2, p, t, func);
+		_traversal((Node*)n3, p, t, func);
+	}
 }
 
 template <typename T, typename V>
