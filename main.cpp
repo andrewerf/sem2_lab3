@@ -39,12 +39,13 @@ int main()
 		std::make_pair(0, "lalal"),
 		std::make_pair(1, "djksfjl")
 	};
-	Tree.get(1) = "lol2";
+	Tree[3] = "lol2";
+	Tree.erase(0);
 
 //	for(int i = 0; i < 1024; ++i)
 //		Tree.insert(i, std::to_string(2*i));
 
-	cout << Tree.get(1);
+	cout << Tree.get(3);
 //	bfs_show(root);
 
 	return 0;
