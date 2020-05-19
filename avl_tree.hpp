@@ -1,110 +1,174 @@
 #ifndef AVL_TREE_HPP
 #define AVL_TREE_HPP
 
+
 template <typename T>
 T max(T&& a, T&& b){
 	return a > b ? a : b;
 }
 
-
-struct Node {
+template <typename T, typename V>
+class AVL_Tree {
 public:
-	Node(int k):
-		key(k),
-		height(1),
-		left(nullptr),
-		right(nullptr)
+	AVL_Tree() :
+		_root(nullptr)
 	{}
-//	Node(int k, Node *l, Node *r):
-//		key(k),
-//		height(max(l->height, r->height) + 1),
-//		left(l),
-//		right(r)
-//	{}
 
-//	int factor(){
-//		return left->height - right->height;
-//	}
 
-	int key;
-	unsigned int height;
-	int val;
-	Node *left, *right;
+	void insert(T key, V val);
+	V& get(T key);
+
+private:
+	struct Node {
+	public:
+		Node(T k, V v):
+			key(k),
+			val(v),
+			height(1),
+			left(nullptr),
+			right(nullptr)
+		{}
+
+
+		T key;
+		V val;
+		unsigned int height;
+		Node *left, *right;
+	};
+
+	int _height(Node *p);
+
+	void _fixheight(Node *p);
+
+	int _factor(Node *p);
+
+	Node *_rotate_right(Node *p);
+
+	Node *_rotate_left(Node *q);
+
+	Node *_balance(Node *p);
+
+	Node *_insert(Node *p, T k, V val);
+
+	Node *_get(Node *p, T k);
+
+private:
+	Node *_root;
 };
 
-int height(Node *p){
+template <typename T, typename V>
+void AVL_Tree<T,V>::insert(T key, V val)
+{
+	if(_root == nullptr){
+		_root = new Node(key, val);
+	}
+	else{
+		_root = _insert(_root, key, val);
+	}
+}
+
+template <typename T, typename V>
+V& AVL_Tree<T,V>::get(T key)
+{
+	return _get(_root, key)->val;
+}
+
+
+
+
+template <typename T, typename V>
+int AVL_Tree<T,V>::_height(Node *p){
 	return p ? p->height : 0;
 }
 
-void fixheight(Node *p){
-	p->height = max(height(p->left), height(p->right)) + 1;
+template <typename T, typename V>
+void AVL_Tree<T,V>::_fixheight(Node *p){
+	p->height = max(_height(p->left), _height(p->right)) + 1;
 }
 
-int factor(Node *p){
-	return height(p->right) - height(p->left);
+template <typename T, typename V>
+int AVL_Tree<T,V>::_factor(Node *p){
+	return _height(p->right) - _height(p->left);
 }
 
-
-Node *rotate_right(Node *p)
+template <typename T, typename V>
+typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_rotate_right(Node *p)
 {
 	Node *q = p->left;
 	p->left = q->right;
 	q->right = p;
 
-	fixheight(p);
-	fixheight(q);
+	_fixheight(p);
+	_fixheight(q);
 
 	return q;
 }
 
-Node *rotate_left(Node *q)
+template <typename T, typename V>
+typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_rotate_left(Node *q)
 {
 	Node *p = q->right;
 	q->right = p->left;
 	p->left = q;
 
-	fixheight(q);
-	fixheight(p);
+	_fixheight(q);
+	_fixheight(p);
 
 	return p;
 }
 
 
-Node *balance(Node *p)
+template <typename T, typename V>
+typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_balance(Node *p)
 {
-	fixheight(p);
+	_fixheight(p);
 
-	if(factor(p) == 2)
+	if(_factor(p) == 2)
 	{
-		if(factor(p->right) < 0)
-			p->right = rotate_right(p->right);
+		if(_factor(p->right) < 0)
+			p->right = _rotate_right(p->right);
 
-		p = rotate_left(p);
+		p = _rotate_left(p);
 	}
-	else if(factor(p) == -2)
+	else if(_factor(p) == -2)
 	{
-		if(factor(p->left) > 0)
-			p->left = rotate_left(p->left);
+		if(_factor(p->left) > 0)
+			p->left = _rotate_left(p->left);
 
-		p = rotate_right(p);
+		p = _rotate_right(p);
 	}
 
 	return p;
 }
 
 
-Node *insert(Node *p, int k)
+template <typename T, typename V>
+typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_insert(Node *p, T k, V val)
 {
 	if(p == nullptr){
-		return new Node(k);
+		return new Node(k, val);
 	}
 	if(k < p->key)
-		p->left = insert(p->left, k);
+		p->left = _insert(p->left, k, val);
 	else
-		p->right = insert(p->right, k);
+		p->right = _insert(p->right, k, val);
 
-	fixheight(p);
-	return balance(p);
+	_fixheight(p);
+	return _balance(p);
+}
+
+template<typename T, typename V>
+typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_get(Node *p, T k)
+{
+	if(p == nullptr){
+		return nullptr;
+	}
+	if(k == p->key)
+		return p;
+	if(k < p->key)
+		return _get(p->left, k);
+	else
+		return _get(p->right, k);
 }
 
 
