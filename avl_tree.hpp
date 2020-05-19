@@ -15,8 +15,16 @@ public:
 		_size(0)
 	{}
 
+	explicit AVL_Tree(const AVL_Tree<T,V> &Tree);
+	AVL_Tree& operator=(const AVL_Tree<T,V> &Tree);
+
+	explicit AVL_Tree(AVL_Tree<T,V>&& Tree) noexcept;
+	AVL_Tree& operator=(AVL_Tree<T,V>&& Tree) noexcept;
+
 	template<typename ...Args>
 	AVL_Tree(Args&& ...args);
+
+	~AVL_Tree();
 
 
 	template<typename TT, typename VV>
@@ -42,8 +50,8 @@ public:
 
 
 	void traversal(traversal_type t, traversal_func func) {_traversal(_root, nullptr, t, func);}
-	size_t size() const {return _size;}
-	int height() const {return _root->height;}
+	size_t size() const noexcept {return _size;}
+	int height() const noexcept {return _root->height;}
 
 private:
 	struct Node {
@@ -56,7 +64,8 @@ private:
 			left(nullptr),
 			right(nullptr)
 		{}
-
+		explicit Node(Node *node);
+		~Node();
 
 		T key;
 		V val;
@@ -113,6 +122,34 @@ private:
 };
 
 
+template <typename T, typename V>
+AVL_Tree<T, V>::AVL_Tree(const AVL_Tree<T,V> &Tree):
+	_root(new Node(Tree._root)),
+	_size(Tree._size)
+{}
+
+template <typename T, typename V>
+AVL_Tree<T,V>& AVL_Tree<T,V>::operator=(const AVL_Tree<T, V> &Tree)
+{
+	delete _root;
+	_root = new Node(Tree._root);
+	return *this;
+}
+
+template <typename T, typename V>
+AVL_Tree<T, V>::AVL_Tree(AVL_Tree<T,V>&& Tree) noexcept:
+	_root(Tree._root),
+	_size(Tree._size)
+{}
+
+template <typename T, typename V>
+AVL_Tree<T,V>& AVL_Tree<T,V>::operator=(AVL_Tree<T, V> &&Tree) noexcept
+{
+	delete _root;
+	_root = Tree._root;
+	return *this;
+}
+
 
 template <typename T, typename V>
 template <typename ...Args>
@@ -120,6 +157,12 @@ AVL_Tree<T, V>::AVL_Tree(Args&& ...args):
 	AVL_Tree()
 {
 	_list_initializer(std::forward<Args>(args)...);
+}
+
+template <typename T, typename V>
+AVL_Tree<T,V>::~AVL_Tree()
+{
+	delete _root;
 }
 
 
@@ -178,7 +221,29 @@ void AVL_Tree<T, V>::_list_initializer(FV&& p, Args&& ...args)
 }
 
 
+template <typename T, typename V>
+AVL_Tree<T,V>::Node::Node(AVL_Tree<T, V>::Node *node):
+	key(node->key),
+	val(node->val),
+	height(node->height)
+{
+	if(node->left != nullptr)
+		left = new Node(node->left);
+	else
+		left = nullptr;
 
+	if(node->right != nullptr)
+		right = new Node(node->right);
+	else
+		right = nullptr;
+}
+
+template <typename T, typename V>
+AVL_Tree<T,V>::Node::~Node()
+{
+	delete left;
+	delete right;
+}
 
 template <typename T, typename V>
 int AVL_Tree<T,V>::_height(Node *p) const{

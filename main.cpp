@@ -35,14 +35,19 @@ using namespace std;
 
 int main()
 {
-	AVL_Tree<int, string> Tree;
+	AVL_Tree<int, string> Tree, Tree2;
 
 	for(int i = 0; i < 15; ++i)
 		Tree[i] = std::to_string(i);
 
+	Tree2 = Tree;
+	Tree2[4] = "44";
+	Tree2.traversal(Tree2.RRtL, [](const int &a, string &b){
+		std::cout << b << ' ';
+	});
+	cout << '\n';
 	Tree.traversal(Tree.RRtL, [](const int &a, string &b){
 		std::cout << b << ' ';
 	});
-
 	return 0;
 }
