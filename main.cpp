@@ -35,11 +35,16 @@ using namespace std;
 
 int main()
 {
-	AVL_Tree<int, string> Tree;
-	for(int i = 0; i < 1024; ++i)
-		Tree.insert(i, std::to_string(2*i));
+	AVL_Tree<int, string> Tree = {
+		std::make_pair(0, "lalal"),
+		std::make_pair(1, "djksfjl")
+	};
+	Tree.get(1) = "lol2";
 
-	cout << Tree.get(340);
+//	for(int i = 0; i < 1024; ++i)
+//		Tree.insert(i, std::to_string(2*i));
+
+	cout << Tree.get(1);
 //	bfs_show(root);
 
 	return 0;

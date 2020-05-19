@@ -1,11 +1,9 @@
 #ifndef AVL_TREE_HPP
 #define AVL_TREE_HPP
 
+#include <utility>
+#include <stdexcept>
 
-template <typename T>
-T max(T&& a, T&& b){
-	return a > b ? a : b;
-}
 
 template <typename T, typename V>
 class AVL_Tree {
@@ -14,16 +12,26 @@ public:
 		_root(nullptr)
 	{}
 
+	template<typename ...Args>
+	AVL_Tree(Args&& ...args);
 
-	void insert(T key, V val);
-	V& get(T key);
+
+	template<typename TT, typename VV>
+	void insert(TT&& key, VV&& val);
+
+	template<typename TT>
+	V& get(TT&& key) {return _get(_root, std::forward<TT>(key))->val;}
+
+	template<typename TT>
+	const V& get(TT&& key) const {return _get(_root, std::forward<TT>(key))->val;}
 
 private:
 	struct Node {
 	public:
-		Node(T k, V v):
-			key(k),
-			val(v),
+		template<typename TT, typename VV>
+		Node(TT&& k, VV&& v):
+			key(std::forward<TT>(k)),
+			val(std::forward<VV>(v)),
 			height(1),
 			left(nullptr),
 			right(nullptr)
@@ -48,29 +56,53 @@ private:
 
 	Node *_balance(Node *p);
 
-	Node *_insert(Node *p, T k, V val);
+	template<typename TT, typename VV>
+	Node *_insert(Node *p, TT&& k, VV&& val);
 
-	Node *_get(Node *p, T k);
+	template<typename TT>
+	Node *_get(Node *p, TT&& k);
 
 private:
+	template<typename FV, typename ...Args>
+	void _list_initializer(FV&& p, Args&& ...args);
+	void _list_initializer(){}
+
 	Node *_root;
 };
 
+
+
 template <typename T, typename V>
-void AVL_Tree<T,V>::insert(T key, V val)
+template <typename ...Args>
+AVL_Tree<T, V>::AVL_Tree(Args&& ...args):
+	AVL_Tree()
+{
+	_list_initializer(std::forward<Args>(args)...);
+}
+
+
+template <typename T, typename V>
+template<typename TT, typename VV>
+void AVL_Tree<T,V>::insert(TT&& key, VV&& val)
 {
 	if(_root == nullptr){
-		_root = new Node(key, val);
+		_root = new Node(std::forward<TT>(key), std::forward<VV>(val));
 	}
 	else{
-		_root = _insert(_root, key, val);
+		_root = _insert(_root, std::forward<TT>(key), std::forward<VV>(val));
 	}
 }
 
+
+
 template <typename T, typename V>
-V& AVL_Tree<T,V>::get(T key)
+template <typename FV, typename ...Args>
+void AVL_Tree<T, V>::_list_initializer(FV&& p, Args&& ...args)
 {
-	return _get(_root, key)->val;
+	insert(std::forward<typename FV::first_type>(p.first),
+		   std::forward<typename FV::second_type>(p.second));
+
+	_list_initializer(std::forward<Args>(args)...);
 }
 
 
@@ -83,7 +115,7 @@ int AVL_Tree<T,V>::_height(Node *p){
 
 template <typename T, typename V>
 void AVL_Tree<T,V>::_fixheight(Node *p){
-	p->height = max(_height(p->left), _height(p->right)) + 1;
+	p->height = std::max(_height(p->left), _height(p->right)) + 1;
 }
 
 template <typename T, typename V>
@@ -143,26 +175,26 @@ typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_balance(Node *p)
 
 
 template <typename T, typename V>
-typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_insert(Node *p, T k, V val)
+template <typename TT, typename VV>
+typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_insert(Node *p, TT&& k, VV&& val)
 {
-	if(p == nullptr){
-		return new Node(k, val);
-	}
+	if(p == nullptr)
+		return new Node(std::forward<TT>(k), std::forward<VV>(val));
 	if(k < p->key)
-		p->left = _insert(p->left, k, val);
+		p->left = _insert(p->left, std::forward<TT>(k), std::forward<VV>(val));
 	else
-		p->right = _insert(p->right, k, val);
+		p->right = _insert(p->right, std::forward<TT>(k), std::forward<VV>(val));
 
 	_fixheight(p);
 	return _balance(p);
 }
 
-template<typename T, typename V>
-typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_get(Node *p, T k)
+template <typename T, typename V>
+template <typename TT>
+typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_get(Node *p, TT&& k)
 {
-	if(p == nullptr){
-		return nullptr;
-	}
+	if(p == nullptr)
+		throw std::out_of_range("AVL_Tree out of range!");
 	if(k == p->key)
 		return p;
 	if(k < p->key)
@@ -172,5 +204,5 @@ typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_get(Node *p, T k)
 }
 
 
-#endif
 
+#endif
