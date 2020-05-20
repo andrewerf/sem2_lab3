@@ -3,6 +3,7 @@
 #include "sem2_lab2/tests.h"
 #include <algorithm> //for std::sort
 #include "avl_tree.hpp"
+#include "priority_queue.hpp"
 
 
 int randint(int a, int b)
@@ -123,6 +124,22 @@ void test_avl_tree_where()
 }
 
 
+void test_priority_queue()
+{
+	PriorityQueue<int> queue;
+
+	queue.push(0, 0);
+	queue.push(1, 1);
+	queue.push(2, 2);
+	queue.push(3, 3);
+
+	int i = 0;
+	while(!queue.empty())
+		assert_equal(3 - (i++), queue.pop());
+
+	assert_equal(i, 4);
+}
+
 
 int main()
 {
@@ -130,7 +147,9 @@ int main()
 		{"avl_tree_basics", test_avl_tree_basics},
 		{"avl_tree_sort", test_avl_tree_sort},
 		{"avl_tree_map", test_avl_tree_map},
-		{"avl_tree_where", test_avl_tree_where}
+		{"avl_tree_where", test_avl_tree_where},
+
+		{"priority_queue", test_priority_queue}
 	};
 
 	run_tests(functions, sizeof(functions) / sizeof (TestFunction<void>));
