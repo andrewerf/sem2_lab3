@@ -8,20 +8,23 @@
 template <typename T, typename V>
 class AVL_Tree {
 	using traversal_type = void (*)(void*&, void*&, void*&);
-	using traversal_func = void (*)(const T &key, V &val);
 public:
 	AVL_Tree() :
 		_root(nullptr),
 		_size(0)
 	{}
 
-	explicit AVL_Tree(const AVL_Tree<T,V> &Tree);
+	AVL_Tree(const AVL_Tree<T,V> &Tree);
 	AVL_Tree& operator=(const AVL_Tree<T,V> &Tree);
 
-	explicit AVL_Tree(AVL_Tree<T,V>&& Tree) noexcept;
+	AVL_Tree(AVL_Tree<T,V>&& Tree) noexcept;
 	AVL_Tree& operator=(AVL_Tree<T,V>&& Tree) noexcept;
 
-	template<typename ...Args>
+	template<typename ...Args,
+	         typename = typename std::enable_if<
+	                 (std::is_same<
+	                         typename std::remove_reference<typename std::tuple_element<0,Args>::type>::type,
+	                         typename std::remove_reference<T>::type>::value && ...)>::type>
 	AVL_Tree(Args&& ...args);
 
 	~AVL_Tree();
@@ -31,7 +34,7 @@ public:
 	void insert(TT&& key, VV&& val);
 
 	template<typename TT>
-	void erase(TT&& key) {_root = _remove(_root, std::forward<TT>(key));}
+	void erase(TT&& key) {_root = _remove(_root, std::forward<TT>(key)); --_size;}
 
 	template<typename TT>
 	V& get(TT&& key) {return _get(_root, std::forward<TT>(key))->val;}
@@ -48,8 +51,8 @@ public:
 	template<typename TT>
 	const V& operator[] (TT&& key) const {return get(std::forward<TT>(key));}
 
-
-	void traversal(traversal_type t, traversal_func func) {_traversal(_root, nullptr, t, func);}
+	template <typename Func>
+	void traversal(traversal_type t, Func func) {_traversal(_root, nullptr, t, func);}
 	size_t size() const noexcept {return _size;}
 	int height() const noexcept {return _root->height;}
 
@@ -102,7 +105,8 @@ private:
 	template<typename TT>
 	Node *_get(Node *p, TT&& k) const;
 
-	void _traversal(Node *p, Node *parent, traversal_type t, traversal_func func);
+	template <typename Func>
+	void _traversal(Node *p, Node *parent, traversal_type t, Func func);
 
 public:
 	static void RtLR(void *&n1, void *&n2, void *&n3){std::swap(n1, n2);}
@@ -124,7 +128,7 @@ private:
 
 template <typename T, typename V>
 AVL_Tree<T, V>::AVL_Tree(const AVL_Tree<T,V> &Tree):
-	_root(new Node(Tree._root)),
+	_root(Tree._root ? new Node(Tree._root) : nullptr),
 	_size(Tree._size)
 {}
 
@@ -147,12 +151,13 @@ AVL_Tree<T,V>& AVL_Tree<T,V>::operator=(AVL_Tree<T, V> &&Tree) noexcept
 {
 	delete _root;
 	_root = Tree._root;
+	Tree._root = nullptr;
 	return *this;
 }
 
 
 template <typename T, typename V>
-template <typename ...Args>
+template <typename ...Args, typename>
 AVL_Tree<T, V>::AVL_Tree(Args&& ...args):
 	AVL_Tree()
 {
@@ -192,7 +197,8 @@ V& AVL_Tree<T,V>::operator[](TT&& key)
 }
 
 template <typename T, typename V>
-void AVL_Tree<T,V>::_traversal(Node *p, Node *parent, traversal_type t, traversal_func func)
+template <typename Func>
+void AVL_Tree<T,V>::_traversal(Node *p, Node *parent, traversal_type t, Func func)
 {
 	if(p == nullptr)
 		return;
@@ -398,6 +404,51 @@ typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_get(Node *p, TT&& k) const
 }
 
 
+template <typename T, typename V, typename Func>
+AVL_Tree<T,V> map(const AVL_Tree<T,V> &tree, Func f)
+{
+	AVL_Tree<T,V> ret = tree;
+	ret.traversal(ret.LRtR, [f](const T &key, V &val){
+		val = f(val);
+	});
 
+	return ret;
+}
+
+template <typename T, typename V, typename Func>
+AVL_Tree<T,V> map(AVL_Tree<T,V> &&tree, Func f)
+{
+	AVL_Tree<T,V> ret = tree;
+	ret.traversal(ret.LRtR, [f](const T &key, V &val){
+		val = f(val);
+	});
+
+	return ret;
+}
+
+template <typename T, typename V, typename Func>
+AVL_Tree<T,V> where(const AVL_Tree<T,V> &tree, Func f)
+{
+	AVL_Tree<T,V> ret;
+	tree.traversal(tree.LRtR, [&f, &ret](const T &key, V &val){
+		if(f(val)){
+			ret.insert(key, val);
+		}
+	});
+	return ret;
+}
+
+template <typename T, typename V, typename Func>
+AVL_Tree<T,V> where(AVL_Tree<T,V> &&tree, Func f)
+{
+	AVL_Tree<T,V> ret;
+	tree.traversal(tree.LRtR, [&f, &ret](const T &key, V &val){
+		if(f(val)){
+			// Are we actually not able to move key too?
+			ret.insert(key, std::move(val));
+		}
+	});
+	return ret;
+}
 
 #endif

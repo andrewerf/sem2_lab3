@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <tuple>
 
 #include "avl_tree.hpp"
 
@@ -41,7 +42,11 @@ int main()
 		Tree[i] = std::to_string(i);
 
 	Tree2 = Tree;
-	Tree2[4] = "44";
+
+	Tree2 = map<int,string>(Tree2, [](string &s){
+		return "-" + s;
+	});
+
 	Tree2.traversal(Tree2.RRtL, [](const int &a, string &b){
 		std::cout << b << ' ';
 	});
