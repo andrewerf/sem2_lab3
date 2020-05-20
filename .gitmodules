@@ -1,3 +1,6 @@
 [submodule "sem2_lab2"]
 	path = sem2_lab2
 	url = https://github.com/andrewerf/sem2_lab2.git
+[submodule "3rdparty/plotting"]
+	path = 3rdparty/plotting
+	url = https://github.com/lava/matplotlib-cpp.git
