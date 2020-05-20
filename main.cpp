@@ -41,11 +41,11 @@ int main()
 	for(int i = 0; i < 15; ++i)
 		Tree[i] = std::to_string(i);
 
-	Tree2 = Tree;
+	Tree2 = Tree.subtree(7);
 
-	Tree2 = map<int,string>(Tree2, [](string &s){
-		return "-" + s;
-	});
+//	Tree2 = map<int,string>(Tree2, [](string &s){
+//		return "-" + s;
+//	});
 
 	Tree2.traversal(Tree2.RRtL, [](const int &a, string &b){
 		std::cout << b << ' ';

@@ -53,6 +53,10 @@ public:
 
 	template <typename Func>
 	void traversal(traversal_type t, Func func) {_traversal(_root, nullptr, t, func);}
+
+	template<typename TT>
+	AVL_Tree<T,V> subtree(TT&& key) const;
+
 	size_t size() const noexcept {return _size;}
 	int height() const noexcept {return _root->height;}
 
@@ -67,7 +71,7 @@ private:
 			left(nullptr),
 			right(nullptr)
 		{}
-		explicit Node(Node *node);
+		explicit Node(const Node *node);
 		~Node();
 
 		T key;
@@ -108,6 +112,7 @@ private:
 	template <typename Func>
 	void _traversal(Node *p, Node *parent, traversal_type t, Func func);
 
+	size_t _calc_size(Node *p) const;
 public:
 	static void RtLR(void *&n1, void *&n2, void *&n3){std::swap(n1, n2);}
 	static void RtRL(void *&n1, void *&n2, void *&n3){std::swap(n2, n3); std::swap(n1, n3);}
@@ -151,6 +156,7 @@ AVL_Tree<T,V>& AVL_Tree<T,V>::operator=(AVL_Tree<T, V> &&Tree) noexcept
 {
 	delete _root;
 	_root = Tree._root;
+	_size = Tree._size;
 	Tree._root = nullptr;
 	return *this;
 }
@@ -197,6 +203,18 @@ V& AVL_Tree<T,V>::operator[](TT&& key)
 }
 
 template <typename T, typename V>
+template<typename TT>
+AVL_Tree<T,V> AVL_Tree<T,V>::subtree(TT&& key) const
+{
+	const Node *p = _find(_root, std::forward<TT>(key));
+	AVL_Tree<T,V> ret;
+	ret._root = new Node(p);
+	ret._size = ret._calc_size(ret._root);
+
+	return ret;
+}
+
+template <typename T, typename V>
 template <typename Func>
 void AVL_Tree<T,V>::_traversal(Node *p, Node *parent, traversal_type t, Func func)
 {
@@ -228,7 +246,7 @@ void AVL_Tree<T, V>::_list_initializer(FV&& p, Args&& ...args)
 
 
 template <typename T, typename V>
-AVL_Tree<T,V>::Node::Node(AVL_Tree<T, V>::Node *node):
+AVL_Tree<T,V>::Node::Node(const AVL_Tree<T, V>::Node *node):
 	key(node->key),
 	val(node->val),
 	height(node->height)
@@ -402,6 +420,16 @@ typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_get(Node *p, TT&& k) const
 	else
 		return _get(p->right, k);
 }
+
+template <typename T, typename V>
+size_t AVL_Tree<T,V>::_calc_size(Node *p) const
+{
+	if(p == nullptr)
+		return 0;
+	else
+		return _calc_size(p->left) + _calc_size(p->right) + 1;
+}
+
 
 
 template <typename T, typename V, typename Func>
