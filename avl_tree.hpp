@@ -54,6 +54,10 @@ public:
 	template <typename Func>
 	void traversal(traversal_type t, Func func) {_traversal(_root, nullptr, t, func);}
 
+	template <typename Func>
+	void const_traversal(traversal_type t, Func func) const {_const_traversal(_root, nullptr, t, func);}
+
+
 	template<typename TT>
 	AVL_Tree<T,V> subtree(TT&& key) const;
 
@@ -112,6 +116,9 @@ private:
 	template <typename Func>
 	void _traversal(Node *p, Node *parent, traversal_type t, Func func);
 
+	template <typename Func>
+	void _const_traversal(Node *p, Node *parent, traversal_type t, Func func) const;
+
 	size_t _calc_size(Node *p) const;
 public:
 	static void RtLR(void *&n1, void *&n2, void *&n3){std::swap(n1, n2);}
@@ -149,7 +156,10 @@ template <typename T, typename V>
 AVL_Tree<T, V>::AVL_Tree(AVL_Tree<T,V>&& Tree) noexcept:
 	_root(Tree._root),
 	_size(Tree._size)
-{}
+{
+	Tree._root = nullptr;
+	Tree._size = 0;
+}
 
 template <typename T, typename V>
 AVL_Tree<T,V>& AVL_Tree<T,V>::operator=(AVL_Tree<T, V> &&Tree) noexcept
@@ -158,6 +168,7 @@ AVL_Tree<T,V>& AVL_Tree<T,V>::operator=(AVL_Tree<T, V> &&Tree) noexcept
 	_root = Tree._root;
 	_size = Tree._size;
 	Tree._root = nullptr;
+	Tree._size = 0;
 	return *this;
 }
 
@@ -231,6 +242,26 @@ void AVL_Tree<T,V>::_traversal(Node *p, Node *parent, traversal_type t, Func fun
 		_traversal((Node*)n1, p, t, func);
 		_traversal((Node*)n2, p, t, func);
 		_traversal((Node*)n3, p, t, func);
+	}
+}
+
+template <typename T, typename V>
+template <typename Func>
+void AVL_Tree<T,V>::_const_traversal(Node *p, Node *parent, traversal_type t, Func func) const
+{
+	if(p == nullptr)
+		return;
+
+	if(p == parent) {
+		func(p->key, p->val);
+	}
+	else {
+		void *n1 = p->left, *n2 = p, *n3 = p->right;
+		t(n1, n2, n3);
+
+		_const_traversal((Node*)n1, p, t, func);
+		_const_traversal((Node*)n2, p, t, func);
+		_const_traversal((Node*)n3, p, t, func);
 	}
 }
 
@@ -397,7 +428,7 @@ typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_insert(Node *p, TT&& k, VV&& val)
 	if(p == nullptr)
 		return new Node(std::forward<TT>(k), std::forward<VV>(val));
 	if(p->key == k)
-		p->val = val;
+		throw std::runtime_error("AVL_Tree trying to insert by existing key");
 	if(k < p->key)
 		p->left = _insert(p->left, std::forward<TT>(k), std::forward<VV>(val));
 	else
@@ -458,7 +489,7 @@ template <typename T, typename V, typename Func>
 AVL_Tree<T,V> where(const AVL_Tree<T,V> &tree, Func f)
 {
 	AVL_Tree<T,V> ret;
-	tree.traversal(tree.LRtR, [&f, &ret](const T &key, V &val){
+	tree.const_traversal(tree.LRtR, [&f, &ret](const T &key, const V &val){
 		if(f(val)){
 			ret.insert(key, val);
 		}
@@ -470,7 +501,7 @@ template <typename T, typename V, typename Func>
 AVL_Tree<T,V> where(AVL_Tree<T,V> &&tree, Func f)
 {
 	AVL_Tree<T,V> ret;
-	tree.traversal(tree.LRtR, [&f, &ret](const T &key, V &val){
+	tree.const_traversal(tree.LRtR, [&f, &ret](const T &key, const V &val){
 		if(f(val)){
 			// Are we actually not able to move key too?
 			ret.insert(key, std::move(val));
