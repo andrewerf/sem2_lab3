@@ -36,6 +36,8 @@ public:
 	template<typename TT>
 	void erase(TT&& key) {_root = _remove(_root, std::forward<TT>(key)); --_size;}
 
+	void clear();
+
 	template<typename TT>
 	V& get(TT&& key) {return _get(_root, std::forward<TT>(key))->val;}
 
@@ -206,6 +208,13 @@ void AVL_Tree<T,V>::insert(TT&& key, VV&& val)
 	}
 
 	++_size;
+}
+
+template <typename T, typename V>
+void AVL_Tree<T,V>::clear()
+{
+	delete _root;
+	_root = nullptr;
 }
 
 template <typename T, typename V>

@@ -16,6 +16,7 @@ public:
 
 	V& top() const {return _tree.find_max().second;}
 	V pop();
+	void clear() {_tree.clear();}
 
 	size_t size() const noexcept {return _tree.size();}
 	bool empty() const noexcept {return _tree.size() == 0;}
