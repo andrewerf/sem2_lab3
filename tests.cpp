@@ -2,7 +2,6 @@
 
 #include "sem2_lab2/tests.h"
 #include <algorithm> //for std::sort
-#include <iostream>
 #include "avl_tree.hpp"
 
 
@@ -98,13 +97,40 @@ void test_avl_tree_map()
 	});
 }
 
+void test_avl_tree_where()
+{
+	size_t n = randint(10, 100);
+	if(n % 2 == 1)
+		++n;
+
+	AVL_Tree<int, int> tree;
+	int *array = new int[n / 2];
+
+	for(size_t i = 0; i < n; ++i) {
+		tree[i] = i;
+		if(i >= n / 2)
+			array[i - n/2] = i;
+	}
+
+	tree = where(tree, [n](const auto v){
+		return v >= n / 2;
+	});
+
+	size_t i = 0;
+	tree.traversal(tree.LRtR, [&array, &i](auto k, auto v){
+		assert_equal(array[i++], v);
+	});
+}
+
+
 
 int main()
 {
 	TestFunction<void> functions[] = {
 		{"avl_tree_basics", test_avl_tree_basics},
 		{"avl_tree_sort", test_avl_tree_sort},
-		{"avl_tree_map", test_avl_tree_map}
+		{"avl_tree_map", test_avl_tree_map},
+		{"avl_tree_where", test_avl_tree_where}
 	};
 
 	run_tests(functions, sizeof(functions) / sizeof (TestFunction<void>));
