@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
-include_directories(3rdparty ${Python3_INCLUDE_DIR})
+include_directories(${PROJECT_SOURCE_DIR} ${Python3_INCLUDE_DIR})
 
 add_executable(3 main.cpp avl_tree.hpp priority_queue.hpp)
 add_executable(test tests.cpp)
