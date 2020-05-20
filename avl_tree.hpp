@@ -45,6 +45,10 @@ public:
 	template<typename TT>
 	bool find(TT&& key) const {return _find(_root, std::forward<TT>(key)) != nullptr;}
 
+	std::pair<const T&,V&> find_min() const { Node* min_node = _find_min(_root); return {min_node->key, min_node->val};}
+
+	std::pair<const T&,V&> find_max() const { Node* max_node = _find_max(_root); return {max_node->key, max_node->val};}
+
 	template<typename TT>
 	V& operator[] (TT&& key);
 
@@ -101,6 +105,8 @@ private:
 	Node *_find(Node *p, TT&& key) const;
 
 	Node *_find_min(Node *p) const;
+
+	Node *_find_max(Node *p) const;
 
 	Node *_remove_min(Node *p);
 
@@ -383,6 +389,12 @@ template<typename T, typename V>
 typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_find_min(Node *p) const
 {
 	return p->left ? _find_min(p->left) : p;
+}
+
+template<typename T, typename V>
+typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_find_max(Node *p) const
+{
+	return p->right ? _find_max(p->right) : p;
 }
 
 template<typename T, typename V>

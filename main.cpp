@@ -4,34 +4,9 @@
 #include <tuple>
 
 #include "avl_tree.hpp"
+#include "priority_queue.hpp"
 
 using namespace std;
-
-
-//void bfs_show(Node *t)
-//{
-//	vector<Node*> wave;
-//	wave.push_back(t);
-
-//	int ll = 0;
-//	for(size_t i = 0; i < wave.size(); ++i){
-//		auto node = wave[i];
-//		if(ll != height(node)){
-//			cout << '\n';
-//			ll = height(node);
-//		}
-
-//		if(node == nullptr){
-//			cout << "NULL";
-//		}
-//		else{
-//			cout << node->key;
-//			wave.push_back(node->left);
-//			wave.push_back(node->right);
-//		}
-//		cout << "	";
-//	}
-//}
 
 
 int main()
@@ -47,12 +22,23 @@ int main()
 //		return "-" + s;
 //	});
 
-	Tree2.traversal(Tree2.RRtL, [](const int &a, string &b){
+	Tree2.traversal(Tree2.LRtR, [](const int &a, string &b){
 		std::cout << b << ' ';
 	});
 	cout << '\n';
 	Tree.traversal(Tree.RRtL, [](const int &a, string &b){
 		std::cout << b << ' ';
 	});
+	cout << '\n';
+
+	PriorityQueue<string> queue;
+	queue.push(10, "iueto");
+	queue.push(15, "fndj2");
+	queue.push(4321, "reqeq");
+
+	while (!queue.empty()){
+		std::cout << queue.pop() << ' ';
+	}
+
 	return 0;
 }
