@@ -39,6 +39,34 @@ void test_avl_tree_basics()
 	assert_equal(tree2.get(-2), 2);
 }
 
+void test_avl_tree_remove()
+{
+	size_t n = randint(10, 100);
+	AVL_Tree<int, int> tree;
+	int *array = new int[n];
+	bool *used = new bool[2*n];
+	for(size_t i = 0; i < 2*n; ++i)
+		used[i] = false;
+
+	for(size_t i = 0; i < n; ++i) {
+		auto t = randint(0, 2*n);
+		if(used[t]) {
+			i--;
+			continue;
+		}
+		used[t] = true;
+		tree[t] = t;
+		array[i] = t;
+	}
+
+	size_t i = 0;
+	while(tree.size() > 0) {
+		tree.erase(array[i++]);
+	}
+
+	assert_equal(i, n);
+}
+
 void test_avl_tree_sort()
 {
 	AVL_Tree<int, int> tree;
@@ -145,6 +173,7 @@ int main()
 {
 	TestFunction<void> functions[] = {
 		{"avl_tree_basics", test_avl_tree_basics},
+		{"avl_tree_remove", test_avl_tree_remove},
 		{"avl_tree_sort", test_avl_tree_sort},
 		{"avl_tree_map", test_avl_tree_map},
 		{"avl_tree_where", test_avl_tree_where},

@@ -34,7 +34,7 @@ public:
 	void insert(TT&& key, VV&& val);
 
 	template<typename TT>
-	void erase(TT&& key) {_root = _remove(_root, std::forward<TT>(key)); --_size;}
+	void erase(TT&& key) {_assert_empty(); _root = _remove(_root, std::forward<TT>(key)); --_size;}
 
 	void clear();
 
@@ -47,9 +47,9 @@ public:
 	template<typename TT>
 	bool find(TT&& key) const {return _find(_root, std::forward<TT>(key)) != nullptr;}
 
-	std::pair<const T&,V&> find_min() const { Node* min_node = _find_min(_root); return {min_node->key, min_node->val};}
+	std::pair<const T&,V&> find_min() const {_assert_empty(); Node* min_node = _find_min(_root); return {min_node->key, min_node->val};}
 
-	std::pair<const T&,V&> find_max() const { Node* max_node = _find_max(_root); return {max_node->key, max_node->val};}
+	std::pair<const T&,V&> find_max() const {_assert_empty(); Node* max_node = _find_max(_root); return {max_node->key, max_node->val};}
 
 	template<typename TT>
 	V& operator[] (TT&& key);
@@ -128,6 +128,8 @@ private:
 	void _const_traversal(Node *p, Node *parent, traversal_type t, Func func) const;
 
 	size_t _calc_size(Node *p) const;
+
+	void _assert_empty() const;
 public:
 	static void RtLR(void *&n1, void *&n2, void *&n3){std::swap(n1, n2);}
 	static void RtRL(void *&n1, void *&n2, void *&n3){std::swap(n2, n3); std::swap(n1, n3);}
@@ -429,6 +431,9 @@ typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_remove(Node *p, TT&& k)
 	{
 		Node *q = p->left;
 		Node *r = p->right;
+
+		p->left = nullptr;
+		p->right = nullptr;
 		delete p;
 
 		if(r == nullptr)
@@ -439,6 +444,7 @@ typename AVL_Tree<T,V>::Node *AVL_Tree<T,V>::_remove(Node *p, TT&& k)
 		m->left = q;
 		return _balance(m);
 	}
+	return _balance(p);
 }
 
 
@@ -482,6 +488,12 @@ size_t AVL_Tree<T,V>::_calc_size(Node *p) const
 		return _calc_size(p->left) + _calc_size(p->right) + 1;
 }
 
+template <typename T, typename V>
+void AVL_Tree<T,V>::_assert_empty() const
+{
+	if(_root == nullptr)
+		throw std::logic_error("AVL_Tree assert empty");
+}
 
 
 template <typename T, typename V, typename Func>
