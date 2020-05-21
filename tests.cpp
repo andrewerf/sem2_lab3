@@ -2,6 +2,7 @@
 
 #include "sem2_lab2/tests.h"
 #include <algorithm> //for std::sort
+#include <iostream>
 #include "avl_tree.hpp"
 #include "priority_queue.hpp"
 
@@ -151,6 +152,22 @@ void test_avl_tree_where()
 	});
 }
 
+void test_avl_tree_reduce()
+{
+	size_t n = randint(10, 100);
+	AVL_Tree<int,int> tree;
+	int sum = 0;
+
+	for(size_t i = 0; i < n; ++i) {
+		int t = randint(0, 100);
+		sum += t;
+		tree[t] += t;
+	}
+
+	int psum = reduce(tree, 0, std::plus<>());
+	assert_equal(psum, sum);
+}
+
 
 void test_priority_queue()
 {
@@ -177,6 +194,7 @@ int main()
 		{"avl_tree_sort", test_avl_tree_sort},
 		{"avl_tree_map", test_avl_tree_map},
 		{"avl_tree_where", test_avl_tree_where},
+		{"avl_tree_reduce", test_avl_tree_reduce},
 
 		{"priority_queue", test_priority_queue}
 	};

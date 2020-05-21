@@ -7,6 +7,7 @@
 
 template <typename T, typename V>
 class AVL_Tree {
+public:
 	using traversal_type = void (*)(void*&, void*&, void*&);
 public:
 	AVL_Tree() :
@@ -540,6 +541,18 @@ AVL_Tree<T,V> where(AVL_Tree<T,V> &&tree, Func f)
 			ret.insert(key, std::move(val));
 		}
 	});
+	return ret;
+}
+
+template <typename T, typename V, typename VV, typename Func>
+V reduce(const AVL_Tree<T,V> &tree, VV&& init, Func f, typename AVL_Tree<T,V>::traversal_type t_type = AVL_Tree<T,V>::LRtR)
+{
+	V ret = init;
+
+	tree.const_traversal(t_type, [&f, &ret](const T &key, const V &val){
+		ret = f(val, ret);
+	});
+
 	return ret;
 }
 
